@@ -1,0 +1,69 @@
+# Configuración de los servidores que vamos a necesitar
+services:
+
+  # mysql es el nombre que vamos a dar a este primer servicio
+  # Será el nombre que tendremos que usar cuando nos refiramos a él
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_USER: dwes
+      MYSQL_PASSWORD: dwes
+      MYSQL_DATABASE: dwes
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+    networks:
+      - my_network
+
+  apache:
+    build: ./apache
+    ports:
+      - 80:80
+    volumes:
+      - proyecto:/var/www/html
+    networks:
+      - my_network
+      
+  php:
+    build: ./php
+    ports:
+      - 9000:9000
+    volumes:
+      - ./php/proyecto:/var/www/html
+    networks:
+      - my_network
+
+  wordpress:
+    image: bitnami/wordpress:latest
+    ports:
+      - 8081:8080
+    environment:
+      WORDPRESS_DATABASE_HOST: mysql
+      WORDPRESS_DATABASE_USER: dwes
+      WORDPRESS_DATABASE_PASSWORD: dwes
+      WORDPRESS_DATABASE_NAME: dwes
+    volumes:
+      - wordpress_data:/bitnami/wordpress
+    networks:
+      - my_network
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    ports:
+      - 9090:80
+    environment:
+      PMA_HOST: mysql
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+      - my_network
+
+networks:
+  my_network:
+
+volumes:
+  proyecto:
+  mysql_data:
+  wordpress_data:
